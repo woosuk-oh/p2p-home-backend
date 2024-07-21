@@ -1,15 +1,23 @@
-import { Database, constants } from "bun:sqlite";
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import { drizzle } from "drizzle-orm/mysql2";
 import config from "../../drizzle.config";
 import { logger } from "../common/logger";
 import * as schema from "./schema";
+import mysql from "mysql2/promise";
 
-const sqlite = new Database(config.dbCredentials.url, { create: true });
-sqlite.exec("PRAGMA journal_mode = WAL;");
-// sqlite.fileControl(constants.SQLITE_FCNTL_PERSIST_WAL, 0);
+export const connection = await mysql.createConnection({
+  host: config.dbCredentials.host,
+  port: config.dbCredentials.port,
+  user: config.dbCredentials.user,
+  password: config.dbCredentials.password,
+  database: config.dbCredentials.database,
+  multipleStatements: true,
+  charset: "utf8mb4",
+});
 
-export const db = drizzle(sqlite, { schema, logger });
-export const closeDb = () => sqlite.close();
-export const rawDb = sqlite
-
-export default db;
+export const db = drizzle(connection, {
+  mode: "default",
+  schema: schema as any,
+  logger,
+});
+// export const closeDb = () => sqlite.close();
+// export const rawDb = sqlite;

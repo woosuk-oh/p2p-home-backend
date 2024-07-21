@@ -1,5 +1,8 @@
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
-import db, { closeDb } from "./connection";
+import { migrate } from "drizzle-orm/mysql2/migrator";
+import { db, connection } from "./connection";
 
-migrate(db, { migrationsFolder: "sqlite/migrations" });
-closeDb();
+await migrate(db, {
+  migrationsFolder: "mysql/migrations",
+  migrationsSchema: "src/db/schema.ts",
+});
+await connection.end();

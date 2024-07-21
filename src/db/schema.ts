@@ -1,18 +1,20 @@
 import { relations, sql } from "drizzle-orm";
 import {
   customType,
-  integer,
   primaryKey,
-  sqliteTable,
   text,
-} from "drizzle-orm/sqlite-core";
+  mysqlTable,
+  MySqlColumnWithAutoIncrement,
+  bigint,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 const timestamp = customType<{
   data: Date;
   driverData: string;
 }>({
   dataType() {
-    return "datetime";
+    return "timestamp";
   },
   fromDriver(value: string): Date {
     return new Date(value);
@@ -20,15 +22,15 @@ const timestamp = customType<{
 });
 
 // users
-export const users = sqliteTable("users", {
-  id: integer("id", { mode: "number" })
-    .primaryKey({ autoIncrement: true })
-    .unique(),
-  email: text("email").notNull().unique(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  bio: text("bio").default("https://api.realworld.io/images/smiley-cyrus.jpeg"),
-  image: text("image"),
+export const users = mysqlTable("users", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement().unique(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 255 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  bio: varchar("bio", { length: 255 }).default(
+    "https://api.realworld.io/images/smiley-cyrus.jpeg"
+  ),
+  image: varchar("image", { length: 255 }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -40,23 +42,21 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 // articles
-export const articles = sqliteTable("articles", {
-  id: integer("id", { mode: "number" })
-    .primaryKey({ autoIncrement: true })
-    .unique(),
-  authorId: integer("authorId")
+export const articles = mysqlTable("articles", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement().unique(),
+  authorId: bigint("authorId", { mode: "number" })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  slug: text("slug").notNull().unique(),
-  title: text("title").notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
   body: text("body").notNull(),
   createdAt: timestamp("createdAt")
     .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updatedAt")
     .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const articleRelations = relations(articles, ({ one, many }) => ({
@@ -67,28 +67,26 @@ export const articleRelations = relations(articles, ({ one, many }) => ({
 }));
 
 // tags
-export const tags = sqliteTable("tags", {
-  id: integer("id", { mode: "number" })
-    .primaryKey({ autoIncrement: true })
-    .unique(),
-  name: text("name").notNull().unique(),
+export const tags = mysqlTable("tags", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement().unique(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
 });
 
 export const tagRelations = relations(tags, ({ many }) => ({
   tagsArticles: many(tagsArticles),
 }));
 
-export const tagsArticles = sqliteTable(
+export const tagsArticles = mysqlTable(
   "tagsArticles",
   {
-    tagId: integer("tagId")
+    tagId: bigint("tagId", { mode: "number" })
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
-    articleId: integer("articleId")
+    articleId: bigint("articleId", { mode: "number" })
       .notNull()
       .references(() => articles.id, { onDelete: "cascade" }),
   },
-  t => ({
+  (t) => ({
     pk: primaryKey({ columns: [t.tagId, t.articleId] }),
   })
 );
@@ -102,23 +100,21 @@ export const tagsArticlesRelations = relations(tagsArticles, ({ one }) => ({
 }));
 
 // comments
-export const comments = sqliteTable("comments", {
-  id: integer("id", { mode: "number" })
-    .primaryKey({ autoIncrement: true })
-    .unique(),
-  authorId: integer("authorId")
+export const comments = mysqlTable("comments", {
+  id: bigint("id", { mode: "number" }).primaryKey().autoincrement().unique(),
+  authorId: bigint("authorId", { mode: "number" })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  articleId: integer("articleId")
+  articleId: bigint("articleId", { mode: "number" })
     .notNull()
     .references(() => articles.id, { onDelete: "cascade" }),
   body: text("body").notNull(),
   createdAt: timestamp("createdAt")
     .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updatedAt")
     .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const commentRelations = relations(comments, ({ one }) => ({
@@ -130,17 +126,17 @@ export const commentRelations = relations(comments, ({ one }) => ({
 }));
 
 // user follows
-export const userFollows = sqliteTable(
+export const userFollows = mysqlTable(
   "userFollows",
   {
-    followerId: integer("followerId")
+    followerId: bigint("followerId", { mode: "number" })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    followedId: integer("followedId")
+    followedId: bigint("followedId", { mode: "number" })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
   },
-  t => ({
+  (t) => ({
     pk: primaryKey({ columns: [t.followerId, t.followedId] }),
   })
 );
@@ -159,17 +155,17 @@ export const userFollowsRelations = relations(userFollows, ({ one }) => ({
 }));
 
 // user favorites
-export const userFavorites = sqliteTable(
+export const userFavorites = mysqlTable(
   "userFavorites",
   {
-    articleId: integer("articleId")
+    articleId: bigint("articleId", { mode: "number" })
       .notNull()
       .references(() => articles.id, { onDelete: "cascade" }),
-    userId: integer("userId")
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
   },
-  t => ({
+  (t) => ({
     pk: primaryKey({ columns: [t.articleId, t.userId] }),
   })
 );
