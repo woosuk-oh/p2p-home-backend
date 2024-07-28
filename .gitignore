@@ -36,3 +36,7 @@ sqlite/*.sqlite
 sqlite/*.sqlite-shm
 sqlite/*.sqlite-wal
 mysql/
+
+# env file
+.env.local
+.env.test
