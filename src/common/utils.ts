@@ -31,6 +31,19 @@ export function unprocessable(cause?: any) {
   });
 }
 
+export function internalServerError(cause?: any) {
+    return error(500, {
+        errors: { body: [cause ? `${cause}` : "Internal server error"] },
+    });
+}
+
+export function badGateway(cause?: any) {
+    return error(502, {
+        errors: { body: [cause ? `${cause}` : "Bad gateway"] },
+    });
+
+}
+
 export function notFound(cause?: any) {
   return error(404, {
     errors: { body: [cause ? `${cause}` : "Invalid resource identifier"] },

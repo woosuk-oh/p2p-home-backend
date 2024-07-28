@@ -19,7 +19,9 @@
     "@elysiajs/swagger": "^1.0.4",
     "drizzle-orm": "^0.30.9",
     "drizzle-typebox": "^0.1.1",
-    "elysia": "^1.0.14"
+    "elysia": "^1.0.14",
+    "iconv-lite": "^0.6.3",
+    "jsdom": "^24.1.0"
   },
   "devDependencies": {
     "@types/bun": "^1.1.2",
