@@ -6,6 +6,7 @@ import profilesController from "./api/profiles/profiles.controller";
 import tagsController from "./api/tags/tags.controller";
 import usersController from "./api/users/users.controller";
 import { unprocessable } from "./common/utils";
+import scrapingController from "./api/scraping/scraping.controller.ts";
 
 export const app = new Elysia({ prefix: "/api" })
   .use(cors())
@@ -37,6 +38,7 @@ export const app = new Elysia({ prefix: "/api" })
   .use(articlesController)
   .use(commentsController)
   .use(tagsController)
+  .use(scrapingController)
   .listen(Bun.env.PORT || 3001);
 
 export type App = typeof app;
